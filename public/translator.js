@@ -33,17 +33,20 @@ export class Translator {
     this.errorMsgDiv.innerText = "";
   }
 
-  translate = val => {
+  translate = (val, translateOption) => {
+    this.errorMsgDiv.innerText = "";
     if(!val) this.errorMsgDiv.appendChild(this.createParagraph("Error: No text to translate."));
   }
+
+  getTranslatedStr = () => this.translatedSentenceDiv.innerText;
 
   addEventListeners = () => {
     //Clear btn
     this.clearBtn.addEventListener("click", this.clear);
     
     //Translate btn
-    this.translateBtn.addEventListener("click", e => {
-      this.translate(this.textArea.value);
+    this.translateBtn.addEventListener("click", () => {
+      this.translate(this.textArea.value, this.localeSelect.value);
     })
   }
 }
