@@ -1,7 +1,7 @@
-import { americanOnly } from './american-only.js';
-import { britishOnly } from './british-only.js';
-import { americanToBritishSpelling } from './american-to-british-spelling.js';
-import { americanToBritishTitles } from './american-to-british-titles.js';
+import { americanOnly } from "./american-only.js";
+import { britishOnly } from "./british-only.js";
+import { americanToBritishSpelling } from "./american-to-british-spelling.js";
+import { americanToBritishTitles } from "./american-to-british-titles.js";
 
 export class Translator {
   constructor() {
@@ -19,70 +19,134 @@ export class Translator {
     let p = document.createElement("p");
     p.innerText = str;
     return p;
-  }
+  };
 
   createSpan = str => {
     let span = document.createElement("span");
     span.innerText = str;
     return span;
-  }
+  };
 
   clear = () => {
     this.textArea.value = "";
     this.translatedSentenceDiv.innerText = "";
     this.errorMsgDiv.innerText = "";
-  }
+  };
 
   translatorCtrl = (val, translateOption) => {
     this.errorMsgDiv.innerText = "";
+    this.translatedSentenceDiv.innerText = "";
     //Check there is text to translate
-    if(!val) return this.errorMsgDiv.appendChild(this.createParagraph("Error: No text to translate."));
+    if (!val)
+      return this.errorMsgDiv.appendChild(this.createParagraph("Error: No text to translate."));
     //Call the next function depending on the language to translate
-    if(translateOption === "american-to-british") return this.amToBr(val);
-    else if(translateOption === "british-to-american") return this.brToAm(val);
-  }
+    if (translateOption === "american-to-british") return this.amToBr(val);
+    else if (translateOption === "british-to-american") return this.brToAm(val);
+  };
 
   amToBr = str => {
     let valArray = str.split(" ");
     //Check there are terms to translate
-    //TODO check for hours with another method
+    //TODO
     //Make it work for titles and the words at the end of the sentence (.)
     //regex that matches one dot at the end: /\.{1}$/
-    //and for terms that are two words ("only" dictionaries)
     let timeRegex = /^\d\d:\d\d$/;
-    let shouldTranslate = valArray.some(el => timeRegex.test(el) || el in americanOnly || el in americanToBritishSpelling || el in americanToBritishTitles || !!this.getKey(britishOnly, el));
-    if(!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
-  }
+    //TODO
+    //it should be in lowercase to check the dictionaries
+    //and if the element is capizalized and it has to be translated, capitalize the return value too
+    let shouldTranslate = valArray.some(
+      el =>
+        timeRegex.test(el) ||
+        el in americanOnly ||
+        el in americanToBritishSpelling ||
+        el in americanToBritishTitles ||
+        !!this.getKey(britishOnly, el) ||
+        this.checkMultipleWords(valArray, "american-to-british", 2) ||
+        this.checkMultipleWords(valArray, "american-to-british", 3)
+    );
+    if (!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
+    else if(shouldTranslate){
+      let translatedArray = valArray.map(el => {
+        if(timeRegex.test(el)) return this.translateTime(el, "american-to-british");
+        if(el in americanOnly) return americanOnly[el];
+        if(el in americanToBritishSpelling) return americanToBritishSpelling[el];
+        if(el in americanToBritishTitles) return americanToBritishTitles[el];
+        if(!!this.getKey(britishOnly, el)) return this.getKey(britishOnly, el);
+        //TODO
+        //lo de multiple words podria ser un problema aqui porque map devuelve el mismo numero
+        //de items que el array original
+        else return el
+      })
+      return this.translatedSentenceDiv.append(this.createParagraph(translatedArray.join(" ")));
+    }
+  };
 
   brToAm = str => {
     let valArray = str.split(" ");
     let timeRegex = /^\d\d.\d\d$/;
-    let shouldTranslate = valArray.some(el => timeRegex.test(el) || el in britishOnly || !!this.getKey(americanOnly, el) || !!this.getKey(americanToBritishSpelling, el) || !!this.getKey(americanToBritishTitles, el));
-    if(!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
-  }
+    let shouldTranslate = valArray.some(
+      el =>
+        timeRegex.test(el) ||
+        el in britishOnly ||
+        !!this.getKey(americanOnly, el) ||
+        !!this.getKey(americanToBritishSpelling, el) ||
+        !!this.getKey(americanToBritishTitles, el) ||
+        this.checkMultipleWords(valArray, "british-to-american", 2) ||
+        this.checkMultipleWords(valArray, "british-to-american", 3)
+    );
+    if (!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
+    else if(shouldTranslate){
+      let translatedArray = valArray.map(el => {
+        if(timeRegex.test(el)) return this.translateTime(el, "british-to-american");
+        if(el in britishOnly) return britishOnly[el];
+        if(!!this.getKey(americanOnly, el)) this.getKey(americanOnly, el);
+        if(!!this.getKey(americanToBritishSpelling, el)) this.getKey(americanToBritishSpelling, el);
+        if(!!this.getKey(americanToBritishTitles, el)) this.getKey(americanToBritishTitles, el);
+        //TODO
+        //lo de multiple words podria ser un problema aqui porque map devuelve el mismo numero
+        //de items que el array original
+        else return el
+      })
+      return this.translatedSentenceDiv.append(this.createParagraph(translatedArray.join(" ")));
+    }
+  };
 
   getKey = (obj, val) => Object.keys(obj).find(key => obj[key] === val);
 
   translateTime = (time, translateOption) => {
-    if(translateOption === "american-to-british") return time.split(":").join(".");
-    else if(translateOption === "british-to-american") return time.split(".").join(":");
-  }
+    if (translateOption === "american-to-british") return time.split(":").join(".");
+    else if (translateOption === "british-to-american") return time.split(".").join(":");
+  };
+
+  checkMultipleWords = (arr, translateOption, inc) => {
+    let multipleWordArray = [];
+    for (let i = 0; i < arr.length; i += inc) {
+      if (!arr[i + 1]) multipleWordArray.push(arr[i]);
+      else if (!!arr[i + 1] && !arr[i + 2]) multipleWordArray.push(`${arr[i]} ${arr[i + 1]}`);
+      else if (inc === 2) multipleWordArray.push(`${arr[i]} ${arr[i + 1]}`);
+      else if (inc === 3) multipleWordArray.push(`${arr[i]} ${arr[i + 1]} ${arr[i + 2]}`);
+    }
+    if (translateOption === "american-to-british") {
+      return multipleWordArray.some(el => el in americanOnly || !!this.getKey(britishOnly, el));
+    } else if (translateOption === "british-to-american") {
+      return multipleWordArray.some(el => el in britishOnly || !!this.getKey(americanOnly, el));
+    }
+  };
 
   getTranslatedStr = () => this.translatedSentenceDiv.innerText;
 
   addEventListeners = () => {
     //Clear btn
     this.clearBtn.addEventListener("click", this.clear);
-    
+
     //Translate btn
     this.translateBtn.addEventListener("click", () => {
       this.translatorCtrl(this.textArea.value, this.localeSelect.value);
-    })
-  }
+    });
+  };
 }
 
 const translator = new Translator();
-
 
 /* 
   Export your functions for testing in Node.
