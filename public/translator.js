@@ -24,6 +24,12 @@ export class Translator {
     span.innerText = str;
     return span;
   }
+
+
+  addEventListeners = () => {
+    //Clear btn
+    this.clearBtn.addEventListener("click", this.clear);
+  }
 }
 
 const translator = new Translator();
