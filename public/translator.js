@@ -17,15 +17,11 @@ export class Translator {
 
   createParagraph = str => {
     let p = document.createElement("p");
-    p.innerText = str;
+    p.innerHTML = str;
     return p;
   };
 
-  createSpan = str => {
-    let span = document.createElement("span");
-    span.innerText = str;
-    return span;
-  };
+  createHighlightedSpan = str => `<span class="highlight">${str}</span>`;
 
   clear = () => {
     this.textArea.value = "";
@@ -67,11 +63,11 @@ export class Translator {
     if (!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
     else if(shouldTranslate){
       let translatedArray = valArray.map(el => {
-        if(timeRegex.test(el)) return this.translateTime(el, "american-to-british");
-        if(el in americanOnly) return americanOnly[el];
-        if(el in americanToBritishSpelling) return americanToBritishSpelling[el];
-        if(el in americanToBritishTitles) return americanToBritishTitles[el];
-        if(!!this.getKey(britishOnly, el)) return this.getKey(britishOnly, el);
+        if(timeRegex.test(el)) return this.createHighlightedSpan(this.translateTime(el, "american-to-british"));
+        if(el in americanOnly) return this.createHighlightedSpan(americanOnly[el]);
+        if(el in americanToBritishSpelling) return this.createHighlightedSpan(americanToBritishSpelling[el]);
+        if(el in americanToBritishTitles) return this.createHighlightedSpan(americanToBritishTitles[el]);
+        if(!!this.getKey(britishOnly, el)) return this.createHighlightedSpan(this.getKey(britishOnly, el));
         //TODO
         //lo de multiple words podria ser un problema aqui porque map devuelve el mismo numero
         //de items que el array original
@@ -97,11 +93,11 @@ export class Translator {
     if (!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
     else if(shouldTranslate){
       let translatedArray = valArray.map(el => {
-        if(timeRegex.test(el)) return this.translateTime(el, "british-to-american");
-        if(el in britishOnly) return britishOnly[el];
-        if(!!this.getKey(americanOnly, el)) this.getKey(americanOnly, el);
-        if(!!this.getKey(americanToBritishSpelling, el)) this.getKey(americanToBritishSpelling, el);
-        if(!!this.getKey(americanToBritishTitles, el)) this.getKey(americanToBritishTitles, el);
+        if(timeRegex.test(el)) return this.createHighlightedSpan(this.translateTime(el, "british-to-american"));
+        if(el in britishOnly) return this.createHighlightedSpan(britishOnly[el]);
+        if(!!this.getKey(americanOnly, el)) this.createHighlightedSpan(this.getKey(americanOnly, el));
+        if(!!this.getKey(americanToBritishSpelling, el)) this.createHighlightedSpan(this.getKey(americanToBritishSpelling, el));
+        if(!!this.getKey(americanToBritishTitles, el)) this.createHighlightedSpan(this.getKey(americanToBritishTitles, el));
         //TODO
         //lo de multiple words podria ser un problema aqui porque map devuelve el mismo numero
         //de items que el array original
@@ -153,8 +149,3 @@ const translator = new Translator();
   Note: The `try` block is to prevent errors on
   the client side
 */
-// try {
-//   module.exports = {
-
-//   }
-// } catch (e) {}
