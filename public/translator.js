@@ -33,9 +33,36 @@ export class Translator {
     this.errorMsgDiv.innerText = "";
   }
 
-  translate = (val, translateOption) => {
+  translatorCtrl = (val, translateOption) => {
     this.errorMsgDiv.innerText = "";
-    if(!val) this.errorMsgDiv.appendChild(this.createParagraph("Error: No text to translate."));
+    //Check there is text to translate
+    if(!val) return this.errorMsgDiv.appendChild(this.createParagraph("Error: No text to translate."));
+    //Call the next function depending on the language to translate
+    if(translateOption === "american-to-british") return this.amToBr(val);
+    else if(translateOption === "british-to-american") return this.brToAm(val);
+  }
+
+  amToBr = str => {
+    let valArray = str.split(" ");
+    //Check there are terms to translate
+    //TODO check for hours with another method
+    //Make it work for titles and the words at the end of the sentence (.)
+    //and for terms that are two words ("only" dictionaries)
+    let shouldTranslate = valArray.some(el => el in americanOnly || el in americanToBritishSpelling || el in americanToBritishTitles || !!this.getKey(britishOnly, el));
+    if(!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
+  }
+
+  brToAm = str => {
+    let valArray = str.split(" ");
+    let shouldTranslate = valArray.some(el => el in britishOnly || !!this.getKey(americanOnly, el) || !!this.getKey(americanToBritishSpelling, el) || !!this.getKey(americanToBritishTitles, el));
+    if(!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
+  }
+
+  getKey = (obj, val) => Object.keys(obj).find(key => obj[key] === val);
+
+  translateTime = (time, translateOption) => {
+    if(translateOption === "american-to-british") return time.split(":").join(".");
+    else if(translateOption === "british-to-american") return time.split(".").join(":");
   }
 
   getTranslatedStr = () => this.translatedSentenceDiv.innerText;
@@ -46,7 +73,7 @@ export class Translator {
     
     //Translate btn
     this.translateBtn.addEventListener("click", () => {
-      this.translate(this.textArea.value, this.localeSelect.value);
+      this.translatorCtrl(this.textArea.value, this.localeSelect.value);
     })
   }
 }
