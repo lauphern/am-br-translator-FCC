@@ -33,9 +33,18 @@ export class Translator {
     this.errorMsgDiv.innerText = "";
   }
 
+  translate = val => {
+    if(!val) this.errorMsgDiv.appendChild(this.createParagraph("Error: No text to translate."));
+  }
+
   addEventListeners = () => {
     //Clear btn
     this.clearBtn.addEventListener("click", this.clear);
+    
+    //Translate btn
+    this.translateBtn.addEventListener("click", e => {
+      this.translate(this.textArea.value);
+    })
   }
 }
 
