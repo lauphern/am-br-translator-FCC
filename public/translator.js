@@ -47,14 +47,17 @@ export class Translator {
     //Check there are terms to translate
     //TODO check for hours with another method
     //Make it work for titles and the words at the end of the sentence (.)
+    //regex that matches one dot at the end: /\.{1}$/
     //and for terms that are two words ("only" dictionaries)
-    let shouldTranslate = valArray.some(el => el in americanOnly || el in americanToBritishSpelling || el in americanToBritishTitles || !!this.getKey(britishOnly, el));
+    let timeRegex = /^\d\d:\d\d$/;
+    let shouldTranslate = valArray.some(el => timeRegex.test(el) || el in americanOnly || el in americanToBritishSpelling || el in americanToBritishTitles || !!this.getKey(britishOnly, el));
     if(!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
   }
 
   brToAm = str => {
     let valArray = str.split(" ");
-    let shouldTranslate = valArray.some(el => el in britishOnly || !!this.getKey(americanOnly, el) || !!this.getKey(americanToBritishSpelling, el) || !!this.getKey(americanToBritishTitles, el));
+    let timeRegex = /^\d\d.\d\d$/;
+    let shouldTranslate = valArray.some(el => timeRegex.test(el) || el in britishOnly || !!this.getKey(americanOnly, el) || !!this.getKey(americanToBritishSpelling, el) || !!this.getKey(americanToBritishTitles, el));
     if(!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
   }
 
