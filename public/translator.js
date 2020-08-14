@@ -11,6 +11,8 @@ export class Translator {
     this.localeSelect = document.querySelector("#locale-select");
     this.translateBtn = document.querySelector("#translate-btn");
     this.clearBtn = document.querySelector("#clear-btn");
+
+    this.addEventListeners();
   }
 
   createParagraph = str => {
@@ -25,6 +27,11 @@ export class Translator {
     return span;
   }
 
+  clear = () => {
+    this.textArea.value = "";
+    this.translatedSentenceDiv.innerText = "";
+    this.errorMsgDiv.innerText = "";
+  }
 
   addEventListeners = () => {
     //Clear btn
