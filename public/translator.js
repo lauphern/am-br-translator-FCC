@@ -57,22 +57,42 @@ export class Translator {
         el in americanToBritishSpelling ||
         el in americanToBritishTitles ||
         !!this.getKey(britishOnly, el) ||
-        this.checkMultipleWords(valArray, "american-to-british", 2) ||
-        this.checkMultipleWords(valArray, "american-to-british", 3)
+        !!this.checkMultipleWords(valArray, "american-to-british", 2) ||
+        !!this.checkMultipleWords(valArray, "american-to-british", 3)
     );
+    //TODO revisar ambos looks good to me
     if (!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
     else if(shouldTranslate){
-      let translatedArray = valArray.map(el => {
-        if(timeRegex.test(el)) return this.createHighlightedSpan(this.translateTime(el, "american-to-british"));
-        if(el in americanOnly) return this.createHighlightedSpan(americanOnly[el]);
-        if(el in americanToBritishSpelling) return this.createHighlightedSpan(americanToBritishSpelling[el]);
-        if(el in americanToBritishTitles) return this.createHighlightedSpan(americanToBritishTitles[el]);
-        if(!!this.getKey(britishOnly, el)) return this.createHighlightedSpan(this.getKey(britishOnly, el));
-        //TODO
-        //lo de multiple words podria ser un problema aqui porque map devuelve el mismo numero
-        //de items que el array original
-        else return el
-      })
+      let translatedArray = [];
+      let i = 0;
+      while(i < valArray.length) {
+        if(timeRegex.test(valArray[i])) translatedArray.push(this.createHighlightedSpan(this.translateTime(valArray[i], "american-to-british")));
+        else if(valArray[i] in americanOnly) translatedArray.push(this.createHighlightedSpan(americanOnly[valArray[i]]));
+        else if(valArray[i] in americanToBritishSpelling) translatedArray.push(this.createHighlightedSpan(americanToBritishSpelling[valArray[i]]));
+        else if(valArray[i] in americanToBritishTitles) translatedArray.push(this.createHighlightedSpan(americanToBritishTitles[valArray[i]]));
+        else if(!!this.getKey(britishOnly, valArray[i])) translatedArray.push(this.createHighlightedSpan(this.getKey(britishOnly, valArray[i])));
+        else if(!!this.checkMultipleWords(valArray, "american-to-british", 2) || !!this.checkMultipleWords(valArray, "american-to-british", 3)) {
+            //TODO refactor
+            let haystack = this.checkMultipleWords(valArray, "american-to-british", 2);
+            let needle = `${valArray[i]} ${valArray[i+1]}`;
+            let haystack2 = this.checkMultipleWords(valArray, "american-to-british", 3);
+            let needle2 = `${valArray[i]} ${valArray[i+1]} ${valArray[i+2]}`;
+            if(haystack2.indexOf(needle2) !== -1) {
+              if(needle2 in americanOnly) translatedArray.push(this.createHighlightedSpan(americanOnly[needle2]));
+              else if(!!this.getKey(britishOnly, needle2)) translatedArray.push(this.createHighlightedSpan(this.getKey(britishOnly, needle2)));
+              i += 3;
+              continue;
+            }
+            if(haystack.indexOf(needle) !== -1) {
+              if(needle in americanOnly) translatedArray.push(this.createHighlightedSpan(americanOnly[needle]));
+              else if(!!this.getKey(britishOnly, needle)) translatedArray.push(this.createHighlightedSpan(this.getKey(britishOnly, needle)));
+              i += 2;
+              continue;
+            }
+            translatedArray.push(valArray[i]);
+          } else translatedArray.push(valArray[i]);
+        i++
+      }
       return this.translatedSentenceDiv.append(this.createParagraph(translatedArray.join(" ")));
     }
   };
@@ -87,22 +107,52 @@ export class Translator {
         !!this.getKey(americanOnly, el) ||
         !!this.getKey(americanToBritishSpelling, el) ||
         !!this.getKey(americanToBritishTitles, el) ||
-        this.checkMultipleWords(valArray, "british-to-american", 2) ||
-        this.checkMultipleWords(valArray, "british-to-american", 3)
+        !!this.checkMultipleWords(valArray, "british-to-american", 2) ||
+        !!this.checkMultipleWords(valArray, "british-to-american", 3)
     );
     if (!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
     else if(shouldTranslate){
-      let translatedArray = valArray.map(el => {
-        if(timeRegex.test(el)) return this.createHighlightedSpan(this.translateTime(el, "british-to-american"));
-        if(el in britishOnly) return this.createHighlightedSpan(britishOnly[el]);
-        if(!!this.getKey(americanOnly, el)) return this.createHighlightedSpan(this.getKey(americanOnly, el));
-        if(!!this.getKey(americanToBritishSpelling, el)) return this.createHighlightedSpan(this.getKey(americanToBritishSpelling, el));
-        if(!!this.getKey(americanToBritishTitles, el)) return this.createHighlightedSpan(this.getKey(americanToBritishTitles, el));
-        //TODO
-        //lo de multiple words podria ser un problema aqui porque map devuelve el mismo numero
-        //de items que el array original
-        else return el
-      })
+      // let translatedArray = valArray.map(el => {
+      //   // if(timeRegex.test(el)) return this.createHighlightedSpan(this.translateTime(el, "british-to-american"));
+      //   // if(el in britishOnly) return this.createHighlightedSpan(britishOnly[el]);
+      //   // if(!!this.getKey(americanOnly, el)) return this.createHighlightedSpan(this.getKey(americanOnly, el));
+      //   // if(!!this.getKey(americanToBritishSpelling, el)) return this.createHighlightedSpan(this.getKey(americanToBritishSpelling, el));
+      //   // if(!!this.getKey(americanToBritishTitles, el)) return this.createHighlightedSpan(this.getKey(americanToBritishTitles, el));
+      //   //TODO
+      //   //lo de multiple words podria ser un problema aqui porque map devuelve el mismo numero
+      //   //de items que el array original
+      //   else return el
+      // })
+      let translatedArray = [];
+      let i = 0;
+      while(i < valArray.length) {
+        if(timeRegex.test(valArray[i])) translatedArray.push(this.createHighlightedSpan(this.translateTime(valArray[i], "british-to-american")));
+        else if(valArray[i] in britishOnly) translatedArray.push(this.createHighlightedSpan(britishOnly[valArray[i]]));
+        else if(!!this.getKey(americanOnly, valArray[i])) translatedArray.push(this.createHighlightedSpan(this.getKey(americanOnly, valArray[i])));
+        else if(!!this.getKey(americanToBritishSpelling, valArray[i])) translatedArray.push(this.createHighlightedSpan(this.getKey(americanToBritishSpelling, valArray[i])));
+        else if(!!this.getKey(americanToBritishTitles, valArray[i])) translatedArray.push(this.createHighlightedSpan(this.getKey(americanToBritishTitles, valArray[i])));
+        else if(!!this.checkMultipleWords(valArray, "british-to-american", 2) || !!this.checkMultipleWords(valArray, "british-to-american", 3)) {
+            //TODO refactor
+            let haystack = this.checkMultipleWords(valArray, "british-to-american", 2);
+            let needle = `${valArray[i]} ${valArray[i+1]}`;
+            let haystack2 = this.checkMultipleWords(valArray, "british-to-american", 3);
+            let needle2 = `${valArray[i]} ${valArray[i+1]} ${valArray[i+2]}`;
+            if(haystack2.indexOf(needle2) !== -1) {
+              if(needle2 in britishOnly) translatedArray.push(this.createHighlightedSpan(britishOnly[needle2]));
+              else if(!!this.getKey(americanOnly, needle2)) translatedArray.push(this.createHighlightedSpan(this.getKey(americanOnly, needle2)));
+              i += 3;
+              continue;
+            }
+            if(haystack.indexOf(needle) !== -1) {
+              if(needle in britishOnly) translatedArray.push(this.createHighlightedSpan(britishOnly[needle]));
+              else if(!!this.getKey(americanOnly, needle)) translatedArray.push(this.createHighlightedSpan(this.getKey(americanOnly, needle)));
+              i += 2;
+              continue;
+            }
+            translatedArray.push(valArray[i]);
+          } else translatedArray.push(valArray[i]);
+        i++
+      }
       return this.translatedSentenceDiv.append(this.createParagraph(translatedArray.join(" ")));
     }
   };
@@ -123,9 +173,9 @@ export class Translator {
       else if (inc === 3) multipleWordArray.push(`${arr[i]} ${arr[i + 1]} ${arr[i + 2]}`);
     }
     if (translateOption === "american-to-british") {
-      return multipleWordArray.some(el => el in americanOnly || !!this.getKey(britishOnly, el));
+      return multipleWordArray.filter(el => el in americanOnly || !!this.getKey(britishOnly, el));
     } else if (translateOption === "british-to-american") {
-      return multipleWordArray.some(el => el in britishOnly || !!this.getKey(americanOnly, el));
+      return multipleWordArray.filter(el => el in britishOnly || !!this.getKey(americanOnly, el));
     }
   };
 
