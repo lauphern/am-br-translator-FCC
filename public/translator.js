@@ -95,9 +95,9 @@ export class Translator {
       let translatedArray = valArray.map(el => {
         if(timeRegex.test(el)) return this.createHighlightedSpan(this.translateTime(el, "british-to-american"));
         if(el in britishOnly) return this.createHighlightedSpan(britishOnly[el]);
-        if(!!this.getKey(americanOnly, el)) this.createHighlightedSpan(this.getKey(americanOnly, el));
-        if(!!this.getKey(americanToBritishSpelling, el)) this.createHighlightedSpan(this.getKey(americanToBritishSpelling, el));
-        if(!!this.getKey(americanToBritishTitles, el)) this.createHighlightedSpan(this.getKey(americanToBritishTitles, el));
+        if(!!this.getKey(americanOnly, el)) return this.createHighlightedSpan(this.getKey(americanOnly, el));
+        if(!!this.getKey(americanToBritishSpelling, el)) return this.createHighlightedSpan(this.getKey(americanToBritishSpelling, el));
+        if(!!this.getKey(americanToBritishTitles, el)) return this.createHighlightedSpan(this.getKey(americanToBritishTitles, el));
         //TODO
         //lo de multiple words podria ser un problema aqui porque map devuelve el mismo numero
         //de items que el array original
