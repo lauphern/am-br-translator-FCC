@@ -41,7 +41,7 @@ export class Translator {
     this.translatedSentenceDiv.innerText = "";
     //1. Check there is text to translate
     if (!val) return this.errorMsgDiv.appendChild(this.createParagraph("Error: No text to translate."));
-    let valArray = val.split(" ");
+    let valArray = val.split(" ").map(el => this.strToObj(el))
     //TODO
     //Make it work for titles and the words at the end of the sentence (.)
     //regex that matches one dot at the end: /\.{1}$/
@@ -89,7 +89,7 @@ export class Translator {
       else if(arr[i] in dictionaryArr[1]) translatedArray.push(this.createSpan(dictionaryArr[1][arr[i]]));
       else if(arr[i] in dictionaryArr[2]) translatedArray.push(this.createSpan(dictionaryArr[2][arr[i]]));
       else if(arr[i] in dictionaryArr[3]) translatedArray.push(this.createSpan(dictionaryArr[3][arr[i]]));
-      else if(!!this.checkMultipleWords(arr, translateOption, 2) || !!this.checkMultipleWords(arr, translateOption, 3)) {
+      else if(this.checkMultipleWords(arr, translateOption, 2).length > 0 || this.checkMultipleWords(arr, translateOption, 3).length > 0) {
           //TODO refactor
           let haystack = this.checkMultipleWords(arr, translateOption, 2);
           let needle = `${arr[i]} ${arr[i+1]}`;
@@ -112,6 +112,46 @@ export class Translator {
       i++
     }
     return this.translatedSentenceDiv.append(this.createParagraph(translatedArray.join(" ")));
+  }
+
+  strToObj = str => {
+    let obj = {
+      originalStr: str,
+      cleanStr: str.toLowerCase(),
+      capitalized: false,
+      dot: false,
+      comma: false,
+      semicolon: false,
+      colon: false,
+      exclamation: false,
+      question: false
+    };
+    if(str.charCodeAt(0) <= 65 && str.charCodeAt(0) >= 90) obj.capitalized = true;
+    if(str.charCodeAt(str.length - 1) === 46) obj.dot = true;
+    switch(str.charCodeAt(str.length - 1)) {
+      case 46:
+        obj.dot = true;
+        break;
+      case 44:
+        obj.comma = true;
+        break;
+      case 59:
+        obj.semicolon = true;
+        break;
+      case 58:
+        obj.colon = true;
+        break;
+      case 33:
+        obj.exclamation = true;
+        break;
+      case 63:
+        obj.question = true;
+        break;
+    }
+    if(obj.dot || obj.comma || obj.semicolon || obj.colon || obj.exclamation || obj.question) {
+      obj.cleanStr = obj.cleanStr.slice(0, str.length - 1);
+    }
+    return obj
   }
 
   translateTime = (time, translateOption) => {
