@@ -17,7 +17,6 @@ export class Translator {
     this.localeSelect = document.querySelector("#locale-select");
     this.translateBtn = document.querySelector("#translate-btn");
     this.clearBtn = document.querySelector("#clear-btn");
-
     this.init()
   }
 
@@ -39,18 +38,30 @@ export class Translator {
   //   question: false
   // };
 
-  createSpan = ({obj, time}) => {
-    //We can use this method with either obj or time
-    //Obj is for the usual type of translation
-    if(time) return `<span class="highlight">${time}</span>`;
+  
+
+  createSpan = ({obj, time, arr, returnStr = ""}) => {
+    //We can use this method with either obj, time and arr
+    //"Obj" is for the usual type of translation
+    //"Time" is self explanatory
+    //"Arr" if to add support for 2 and 3 word terms
+    if(time) return `<span class="highlight">${time}</span> `;
+    if(arr) {
+      if(arr.length === 1) return this.createSpan({obj: arr[0], returnStr: returnStr});
+      // if(arr.length === 1) return this.createSpan({obj: arr[0]});
+      else if(arr.length > 1) {
+        let firstItem = arr.shift();
+        return this.createSpan({arr, returnStr: this.createSpan({obj: firstItem})});
+      }
+    }
     if(obj.capitalized) obj.translation = obj.translation.slice(0,1).toUpperCase() + obj.translation.slice(1);
-    if(obj.dot) return `<span class="highlight">${obj.translation}</span>.`;
-    if(obj.comma) return `<span class="highlight">${obj.translation}</span>,`;
-    if(obj.semicolon) return `<span class="highlight">${obj.translation}</span>;`;
-    if(obj.colon) return `<span class="highlight">${obj.translation}</span>:`;
-    if(obj.exclamation) return `<span class="highlight">${obj.translation}</span>!`;
-    if(obj.question) return `<span class="highlight">${obj.translation}</span>?`;
-    return `<span class="highlight">${obj.translation}</span>`;
+    if(obj.dot) return returnStr += `<span class="highlight">${obj.translation}</span>. `;
+    if(obj.comma) return returnStr += `<span class="highlight">${obj.translation}</span>, `;
+    if(obj.semicolon) return returnStr += `<span class="highlight">${obj.translation}</span>; `;
+    if(obj.colon) return returnStr += `<span class="highlight">${obj.translation}</span>: `;
+    if(obj.exclamation) return returnStr += `<span class="highlight">${obj.translation}</span>! `;
+    if(obj.question) return returnStr += `<span class="highlight">${obj.translation}</span>? `;
+    return returnStr += `<span class="highlight">${obj.translation}</span> `
   };
 
   clear = () => {
@@ -66,13 +77,7 @@ export class Translator {
     //1. Check there is text to translate
     if (!val) return this.errorMsgDiv.appendChild(this.createParagraph("Error: No text to translate."));
     let valArray = val.split(" ").map(el => this.strToObj(el))
-    //TODO
-    //Make it work for titles and the words at the end of the sentence (.)
-    //regex that matches one dot at the end: /\.{1}$/
-    let timeRegex = /^\d\d:\d\d$/;
-    //TODO
-    //it should be in lowercase to check the dictionaries
-    //and if the element is capizalized and it has to be translated, capitalize the return value too
+    let timeRegex = /(^\d{1,2}:\d\d$|^\d{1,2}.\d\d$)/;
     //2. Call the next function depending on the language to translate
     if (translateOption === "american-to-british") {
       //1. Check there are terms to translate
@@ -98,10 +103,9 @@ export class Translator {
         el.cleanStr in dictionaryArr[0] ||
         el.cleanStr in dictionaryArr[1] ||
         el.cleanStr in dictionaryArr[2] ||
-        el.cleanStr in dictionaryArr[3] 
-        // ||
-        // this.checkMultipleWords(arr, translateOption, 2).length > 0 ||
-        // this.checkMultipleWords(arr, translateOption, 3).length > 0
+        el.cleanStr in dictionaryArr[3] ||
+        this.checkMultipleWords(arr, translateOption, 2).length > 0 ||
+        this.checkMultipleWords(arr, translateOption, 3).length > 0
     );
   }
 
@@ -123,35 +127,73 @@ export class Translator {
       } else if(arr[i].cleanStr in dictionaryArr[3]) {
         arr[i].translation = dictionaryArr[3][arr[i].cleanStr];
         translatedArray.push(this.createSpan({obj: arr[i]}));
-      }
-      // else if(this.checkMultipleWords(arr, translateOption, 2).length > 0 || this.checkMultipleWords(arr, translateOption, 3).length > 0) {
-      //     //TODO refactor
-      //     let haystack = this.checkMultipleWords(arr, translateOption, 2);
-      //     let needle = `${arr[i]} ${arr[i+1]}`;
-      //     let haystack2 = this.checkMultipleWords(arr, translateOption, 3);
-      //     let needle2 = `${arr[i]} ${arr[i+1]} ${arr[i+2]}`;
-      //     if(haystack2.indexOf(needle2) !== -1) {
-      //       if(needle2 in dictionaryArr[0]) {
-      //         translatedArray.push(this.createSpan(dictionaryArr[0][needle2]));
-      //       } else if(needle2 in dictionaryArr[3]) translatedArray.push(this.createSpan(dictionaryArr[3][needle2]));
-      //       i += 3;
-      //       continue;
-      //     }
-      //     if(haystack.indexOf(needle) !== -1) {
-      //       if(needle in dictionaryArr[0]) {
-      //         translatedArray.push(this.createSpan(dictionaryArr[0][needle]))
-      //       } else if(needle in dictionaryArr[3]) translatedArray.push(this.createSpan(dictionaryArr[3][needle]));
-      //       i += 2;
-      //       continue;
-      //     }
-      //     translatedArray.push(arr[i]);
-      //   }
-      else {
+      } else if(this.checkMultipleWords(arr, translateOption, 2).length > 0 || this.checkMultipleWords(arr, translateOption, 3).length > 0) {
+        //TODO refactor
+        //TODO deberia evaluarse primero lo de las dos y tres palabras (mirar "installment plan")
+        if(!arr[i + 1]) {
           translatedArray.push(arr[i].originalStr);
+          i++;
+          continue;
         }
+        //The following variable is used to skip to the next iteration of the while loop
+        //We use a variable because the decision is being made from the forEach function
+        let doContinue;
+        let haystack = this.checkMultipleWords(arr, translateOption, 2);
+        let needle = `${arr[i].cleanStr} ${arr[i+1].cleanStr}`;
+        haystack.forEach(el => {
+          if(el.indexOf(needle) !== -1) {
+            if(needle in dictionaryArr[0]) {
+              //TODO make it work for createSpan
+              //send array to createSpan
+              //The array should have the type of object createSpan is expecting
+              let translationArr = dictionaryArr[0][needle].split(" ");
+              arr[i].translation = translationArr.shift();
+              arr[i+1].translation = translationArr.length > 0 ? translationArr : "";
+              translatedArray.push(this.createSpan({arr: [arr[i], arr[i+1]]}))
+            } else if(needle in dictionaryArr[3]) {
+              let translationArr = dictionaryArr[3][needle].split(" ");
+              arr[i].translation = translationArr.shift();
+              arr[i+1].translation = translationArr.length > 0 ? translationArr : "";
+              translatedArray.push(this.createSpan({arr: [arr[i], arr[i+1]]}));
+            }
+            i += 2;
+            doContinue = true;
+          }
+        })
+        if(doContinue) continue;
+        if(!arr[i + 2]) {
+          translatedArray.push(arr[i].originalStr);
+          i++;
+          continue;
+        }
+        //TODO CHECK THAT IT WORKS FOR THIS OPTION
+        //Y lo tengo que hacer definitivamente antes que la opcion anterior
+        //Y ambas antes que la opcion de una unica palabra
+        //IMPORTANTE TODO
+        let haystack2 = this.checkMultipleWords(arr, translateOption, 3);
+        let needle2 = `${arr[i].cleanStr} ${arr[i+1].cleanStr} ${arr[i+2].cleanStr}`;
+        haystack2.forEach(el => {
+          if(el.indexOf(needle2) !== -1) {
+            if(needle2 in dictionaryArr[0]) {
+              translatedArray.push(this.createSpan(dictionaryArr[0][needle2]));
+            } else if(needle2 in dictionaryArr[3]) {
+              translatedArray.push(this.createSpan(dictionaryArr[3][needle2]));
+            }
+            i += 3;
+            doContinue = true;
+          }
+        })
+        if(doContinue) continue;
+        translatedArray.push(arr[i].originalStr);
+      } else {
+        translatedArray.push(arr[i].originalStr);
+      }
       i++
     }
-    return this.translatedSentenceDiv.append(this.createParagraph(translatedArray.join(" ")));
+    debugger
+    //We're using replace to trim possible double spaces
+    //And we also trim blankspaces at the end
+    return this.translatedSentenceDiv.append(this.createParagraph(translatedArray.join(" ").replace(/\s+/g, " ").trim()));
   }
 
   strToObj = str => {
@@ -197,22 +239,27 @@ export class Translator {
 
   translateTime = (time, translateOption) => {
     if (translateOption === "american-to-british") return time.split(":").join(".");
-    else if (translateOption === "british-to-american") return time.split(".").join(":");
+    else if (translateOption === "british-to-american") return time.replace(/\./, ":");
   };
 
   checkMultipleWords = (arr, translateOption, inc) => {
     //TODO refactor so it works with an array of objects
+    //there is a specific case that has capital letters in the dictionary
     let multipleWordArray = [];
     for (let i = 0; i < arr.length; i++) {
       if (!arr[i + 1]) multipleWordArray.push(arr[i]);
-      else if (!!arr[i + 1] && !arr[i + 2]) multipleWordArray.push(`${arr[i]} ${arr[i + 1]}`);
-      else if (inc === 2) multipleWordArray.push(`${arr[i]} ${arr[i + 1]}`);
-      else if (inc === 3) multipleWordArray.push(`${arr[i]} ${arr[i + 1]} ${arr[i + 2]}`);
-    }
+      else if (!!arr[i + 1] && !arr[i + 2]) {
+        multipleWordArray.push([`${arr[i].cleanStr} ${arr[i + 1].cleanStr}`, arr[i], arr[i + 1]]);
+      } else if (inc === 2) {
+        multipleWordArray.push([`${arr[i].cleanStr} ${arr[i + 1].cleanStr}`, arr[i], arr[i + 1]]);
+      } else if (inc === 3) {
+        multipleWordArray.push([`${arr[i].cleanStr} ${arr[i + 1].cleanStr} ${arr[i + 2].cleanStr}`, arr[i], arr[i + 1], arr[i + 2]]);
+      }
+    };
     if (translateOption === "american-to-british") {
-      return multipleWordArray.filter(el => el in americanOnly || el in britishOnlyReversed);
+      return multipleWordArray.filter(el => el[0] in americanOnly || el[0] in britishOnlyReversed);
     } else if (translateOption === "british-to-american") {
-      return multipleWordArray.filter(el => el in britishOnly || el in americanOnlyReversed);
+      return multipleWordArray.filter(el => el[0] in britishOnly || el[0] in americanOnlyReversed);
     }
   };
 
