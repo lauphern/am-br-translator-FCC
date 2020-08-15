@@ -179,7 +179,7 @@ export class Translator {
     }
   };
 
-  getTranslatedStr = () => this.translatedSentenceDiv.innerText;
+  getTranslatedStr = () => this.translatedSentenceDiv.textContent;
 
   addEventListeners = () => {
     //Clear btn
