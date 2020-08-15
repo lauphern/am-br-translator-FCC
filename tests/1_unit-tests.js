@@ -37,17 +37,19 @@ suite('Unit Tests', () => {
         translator.clear();
         translator.translatorCtrl(input, "american-to-british");
         let result = translator.getTranslatedStr();
+        console.log(result)
         assert.equal(output, result);
         done();
       });
 
-      test('I ate yogurt for breakfast. --> I ate yoghurt for breakfast.', done => {
+      test('I ate yogurt for breakfast. --> I ate yoghurt for brekkie.', done => {
         const input = 'I ate yogurt for breakfast.';
-        const output = 'I ate yoghurt for breakfast.';
+        const output = 'I ate yoghurt for brekkie.';
         const translator = new Translator.Translator();
         translator.clear();
         translator.translatorCtrl(input, "american-to-british");
         let result = translator.getTranslatedStr();
+        console.log(result)
         assert.equal(output, result);
         done();
       });
@@ -71,6 +73,7 @@ suite('Unit Tests', () => {
         translator.clear();
         translator.translatorCtrl(input, "american-to-british");
         let result = translator.getTranslatedStr();
+        console.log(result)
         assert.equal(output, result);
         done();
       });
@@ -82,6 +85,7 @@ suite('Unit Tests', () => {
         translator.clear();
         translator.translatorCtrl(input, "american-to-british");
         let result = translator.getTranslatedStr();
+        console.log(result)
         assert.equal(output, result);
         done();
       });
@@ -106,6 +110,7 @@ suite('Unit Tests', () => {
         translator.clear();
         translator.translatorCtrl(input, "american-to-british");
         let result = translator.getTranslatedStr();
+        console.log(result)
         assert.equal(output, result);
         done();
       });
@@ -143,6 +148,7 @@ suite('Unit Tests', () => {
         translator.clear();
         translator.translatorCtrl(input, "american-to-british");
         let result = translator.getTranslatedStr();
+        console.log(result)
         assert.equal(output, result);
         done();
       });
@@ -158,6 +164,7 @@ suite('Unit Tests', () => {
         translator.clear();
         translator.translatorCtrl(input, "british-to-american");
         let result = translator.getTranslatedStr();
+        console.log(result)
         assert.equal(output, result);
         done();
       });
@@ -180,6 +187,7 @@ suite('Unit Tests', () => {
         translator.clear();
         translator.translatorCtrl(input, "british-to-american");
         let result = translator.getTranslatedStr();
+        console.log(result)
         assert.equal(output, result);
         done();
       });
@@ -224,6 +232,7 @@ suite('Unit Tests', () => {
         translator.clear();
         translator.translatorCtrl(input, "british-to-american");
         let result = translator.getTranslatedStr();
+        console.log(result)
         assert.equal(output, result);
         done();
       });

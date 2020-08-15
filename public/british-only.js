@@ -28,7 +28,6 @@ export const britishOnly = {
   "boiled sweet": "hard candy",
   "bone-idle": "lazy",
   "brekkie": "breakfast",
-  "brekky": "breakfast",
   "breve": "double whole note",
   "brolly": "umbrella",
   "building society": "savings and loan association",
