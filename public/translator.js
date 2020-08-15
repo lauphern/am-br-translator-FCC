@@ -3,6 +3,12 @@ import { britishOnly } from "./british-only.js";
 import { americanToBritishSpelling } from "./american-to-british-spelling.js";
 import { americanToBritishTitles } from "./american-to-british-titles.js";
 
+//We use reversed dictionaries to simplify the methods we use for translating
+let americanOnlyReversed,
+    britishOnlyReversed,
+    americanToBritishSpellingReversed,
+    americanToBritishTitlesReversed;
+
 export class Translator {
   constructor() {
     this.textArea = document.querySelector("#text-input");
@@ -12,7 +18,7 @@ export class Translator {
     this.translateBtn = document.querySelector("#translate-btn");
     this.clearBtn = document.querySelector("#clear-btn");
 
-    this.addEventListeners();
+    this.init()
   }
 
   createParagraph = str => {
@@ -179,6 +185,22 @@ export class Translator {
       this.translatorCtrl(this.textArea.value, this.localeSelect.value);
     });
   };
+
+  reverseObject = obj => {
+    let reversed = {}
+    for(let key in obj) {
+      reversed[obj[key]] = key
+    }
+    return reversed
+  }
+
+  init = () => {
+    this.addEventListeners();
+    americanOnlyReversed = this.reverseObject(americanOnly);
+    britishOnlyReversed = this.reverseObject(britishOnly);
+    americanToBritishSpellingReversed = this.reverseObject(americanToBritishSpelling);
+    americanToBritishTitlesReversed = this.reverseObject(americanToBritishTitles);
+  }
 }
 
 const translator = new Translator();
