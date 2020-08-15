@@ -39,16 +39,9 @@ export class Translator {
   translatorCtrl = (val, translateOption) => {
     this.errorMsgDiv.innerText = "";
     this.translatedSentenceDiv.innerText = "";
-    //Check there is text to translate
+    //1. Check there is text to translate
     if (!val) return this.errorMsgDiv.appendChild(this.createParagraph("Error: No text to translate."));
-    //Call the next function depending on the language to translate
-    if (translateOption === "american-to-british") return this.amToBr(val);
-    else if (translateOption === "british-to-american") return this.brToAm(val);
-  };
-
-  amToBr = str => {
-    let valArray = str.split(" ");
-    //Check there are terms to translate
+    let valArray = val.split(" ");
     //TODO
     //Make it work for titles and the words at the end of the sentence (.)
     //regex that matches one dot at the end: /\.{1}$/
@@ -56,100 +49,70 @@ export class Translator {
     //TODO
     //it should be in lowercase to check the dictionaries
     //and if the element is capizalized and it has to be translated, capitalize the return value too
-    let shouldTranslate = valArray.some(
-      el =>
-        timeRegex.test(el) ||
-        el in americanOnly ||
-        el in americanToBritishSpelling ||
-        el in americanToBritishTitles ||
-        el in britishOnlyReversed ||
-        !!this.checkMultipleWords(valArray, "american-to-british", 2) ||
-        !!this.checkMultipleWords(valArray, "american-to-british", 3)
-    );
-    if (!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
-    else if(shouldTranslate){
-      let translatedArray = [];
-      let i = 0;
-      while(i < valArray.length) {
-        if(timeRegex.test(valArray[i])) translatedArray.push(this.createSpan(this.translateTime(valArray[i], "american-to-british")));
-        else if(valArray[i] in americanOnly) translatedArray.push(this.createSpan(americanOnly[valArray[i]]));
-        else if(valArray[i] in americanToBritishSpelling) translatedArray.push(this.createSpan(americanToBritishSpelling[valArray[i]]));
-        else if(valArray[i] in americanToBritishTitles) translatedArray.push(this.createSpan(americanToBritishTitles[valArray[i]]));
-        else if(el in britishOnlyReversed) translatedArray.push(this.createSpan(britishOnlyReversed[valArray[i]]));
-        else if(!!this.checkMultipleWords(valArray, "american-to-british", 2) || !!this.checkMultipleWords(valArray, "american-to-british", 3)) {
-            //TODO refactor
-            let haystack = this.checkMultipleWords(valArray, "american-to-british", 2);
-            let needle = `${valArray[i]} ${valArray[i+1]}`;
-            let haystack2 = this.checkMultipleWords(valArray, "american-to-british", 3);
-            let needle2 = `${valArray[i]} ${valArray[i+1]} ${valArray[i+2]}`;
-            if(haystack2.indexOf(needle2) !== -1) {
-              if(needle2 in americanOnly) translatedArray.push(this.createSpan(americanOnly[needle2]));
-              else if(needle2 in britishOnlyReversed) translatedArray.push(this.createSpan(britishOnlyReversed[needle2]));
-              i += 3;
-              continue;
-            }
-            if(haystack.indexOf(needle) !== -1) {
-              if(needle in americanOnly) translatedArray.push(this.createSpan(americanOnly[needle]))
-              else if(needle in britishOnlyReversed) translatedArray.push(this.createSpan(britishOnlyReversed[needle]));
-              i += 2;
-              continue;
-            }
-            translatedArray.push(valArray[i]);
-          } else translatedArray.push(valArray[i]);
-        i++
+    //2. Call the next function depending on the language to translate
+    if (translateOption === "american-to-british") {
+      //1. Check there are terms to translate
+      let shouldTranslate = this.shouldTranslateTemp({arr: valArray, dictionaryArr: [americanOnly, americanToBritishSpelling, americanToBritishTitles, britishOnlyReversed], translateOption: "american-to-british", timeRegex})
+      if (!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
+      else if(shouldTranslate){
+        this.getTranslationTemp({arr: valArray, dictionaryArr: [americanOnly, americanToBritishSpelling, americanToBritishTitles, britishOnlyReversed], translateOption: "american-to-british", timeRegex});
       }
-      return this.translatedSentenceDiv.append(this.createParagraph(translatedArray.join(" ")));
-    }
+    } else if (translateOption === "british-to-american") {
+      //1. Check there are terms to translate
+      let shouldTranslate = this.shouldTranslateTemp({arr: valArray, dictionaryArr: [britishOnly, americanToBritishSpellingReversed, americanToBritishTitlesReversed, americanOnlyReversed], translateOption: "british-to-american", timeRegex})
+      if (!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
+      else if(shouldTranslate){
+        this.getTranslationTemp({arr: valArray, dictionaryArr: [britishOnly, americanToBritishSpellingReversed, americanToBritishTitlesReversed, americanOnlyReversed], translateOption: "british-to-american", timeRegex});
+      }
+    };
   };
 
-  brToAm = str => {
-    let valArray = str.split(" ");
-    let timeRegex = /^\d\d.\d\d$/;
-    let shouldTranslate = valArray.some(
+  shouldTranslateTemp = ({arr, dictionaryArr, translateOption, timeRegex}) => {
+    return arr.some(
       el =>
         timeRegex.test(el) ||
-        el in britishOnly ||
-        el in americanOnlyReversed ||
-        el in americanToBritishSpellingReversed ||
-        el in americanToBritishTitlesReversed ||
-        !!this.checkMultipleWords(valArray, "british-to-american", 2) ||
-        !!this.checkMultipleWords(valArray, "british-to-american", 3)
+        el in dictionaryArr[0] ||
+        el in dictionaryArr[1] ||
+        el in dictionaryArr[2] ||
+        el in dictionaryArr[3] ||
+        this.checkMultipleWords(arr, translateOption, 2).length > 0 ||
+        this.checkMultipleWords(arr, translateOption, 3).length > 0
     );
-    if (!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
-    else if(shouldTranslate){
-      let translatedArray = [];
-      let i = 0;
-      while(i < valArray.length) {
-        if(timeRegex.test(valArray[i])) translatedArray.push(this.createSpan(this.translateTime(valArray[i], "british-to-american")));
-        else if(valArray[i] in britishOnly) translatedArray.push(this.createSpan(britishOnly[valArray[i]]));
-        else if(valArray[i] in americanOnlyReversed) translatedArray.push(this.createSpan(americanOnlyReversed[valArray[i]]));
-        else if(valArray[i] in americanToBritishSpellingReversed) translatedArray.push(this.createSpan(americanToBritishSpellingReversed[valArray[i]]));
-        else if(valArray[i] in americanToBritishTitlesReversed) translatedArray.push(this.createSpan(americanToBritishTitlesReversed[valArray[i]]));
-        else if(!!this.checkMultipleWords(valArray, "british-to-american", 2) || !!this.checkMultipleWords(valArray, "british-to-american", 3)) {
-            //TODO refactor
-            let haystack = this.checkMultipleWords(valArray, "british-to-american", 2);
-            let needle = `${valArray[i]} ${valArray[i+1]}`;
-            let haystack2 = this.checkMultipleWords(valArray, "british-to-american", 3);
-            let needle2 = `${valArray[i]} ${valArray[i+1]} ${valArray[i+2]}`;
-            if(haystack2.indexOf(needle2) !== -1) {
-              if(needle2 in britishOnly) translatedArray.push(this.createSpan(britishOnly[needle2]));
-              else if(needle2 in americanOnlyReversed) translatedArray.push(this.createSpan(americanOnlyReversed[needle2]));
-              i += 3;
-              continue;
-            }
-            if(haystack.indexOf(needle) !== -1) {
-              if(needle in britishOnly) translatedArray.push(this.createSpan(britishOnly[needle]));
-              else if(needle in americanOnlyReversed) translatedArray.push(this.createSpan(americanOnlyReversed[needle]));
-              i += 2;
-              continue;
-            }
-            translatedArray.push(valArray[i]);
-          } else translatedArray.push(valArray[i]);
-        i++
-      }
-      return this.translatedSentenceDiv.append(this.createParagraph(translatedArray.join(" ")));
+  }
+
+  getTranslationTemp = ({arr, dictionaryArr, translateOption, timeRegex}) => {
+    let translatedArray = [];
+    let i = 0;
+    while(i < arr.length) {
+      if(timeRegex.test(arr[i])) translatedArray.push(this.createSpan(this.translateTime(arr[i], translateOption)));
+      else if(arr[i] in dictionaryArr[0]) translatedArray.push(this.createSpan(dictionaryArr[0][arr[i]]));
+      else if(arr[i] in dictionaryArr[1]) translatedArray.push(this.createSpan(dictionaryArr[1][arr[i]]));
+      else if(arr[i] in dictionaryArr[2]) translatedArray.push(this.createSpan(dictionaryArr[2][arr[i]]));
+      else if(arr[i] in dictionaryArr[3]) translatedArray.push(this.createSpan(dictionaryArr[3][arr[i]]));
+      else if(!!this.checkMultipleWords(arr, translateOption, 2) || !!this.checkMultipleWords(arr, translateOption, 3)) {
+          //TODO refactor
+          let haystack = this.checkMultipleWords(arr, translateOption, 2);
+          let needle = `${arr[i]} ${arr[i+1]}`;
+          let haystack2 = this.checkMultipleWords(arr, translateOption, 3);
+          let needle2 = `${arr[i]} ${arr[i+1]} ${arr[i+2]}`;
+          if(haystack2.indexOf(needle2) !== -1) {
+            if(needle2 in dictionaryArr[0]) translatedArray.push(this.createSpan(dictionaryArr[0][needle2]));
+            else if(needle2 in dictionaryArr[3]) translatedArray.push(this.createSpan(dictionaryArr[3][needle2]));
+            i += 3;
+            continue;
+          }
+          if(haystack.indexOf(needle) !== -1) {
+            if(needle in dictionaryArr[0]) translatedArray.push(this.createSpan(dictionaryArr[0][needle]))
+            else if(needle in dictionaryArr[3]) translatedArray.push(this.createSpan(dictionaryArr[3][needle]));
+            i += 2;
+            continue;
+          }
+          translatedArray.push(arr[i]);
+        } else translatedArray.push(arr[i]);
+      i++
     }
-  };
+    return this.translatedSentenceDiv.append(this.createParagraph(translatedArray.join(" ")));
+  }
 
   translateTime = (time, translateOption) => {
     if (translateOption === "american-to-british") return time.split(":").join(".");
