@@ -15,7 +15,7 @@ export const americanOnly = {
   "blinders": "blinkers",
   "blood sausage": "black pudding",
   "boardwalk": "promenade",
-  "bobby pin": "Kirby grip",
+  "bobby pin": "kirby grip",
   "booger": "bogey",
   "bookmobile": "mobile library",
   "breadbox": "bread bin",
