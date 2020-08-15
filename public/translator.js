@@ -74,10 +74,12 @@ export class Translator {
         else if(!!this.getKey(britishOnly, valArray[i])) translatedArray.push(this.createHighlightedSpan(this.getKey(britishOnly, valArray[i])));
         else if(!!this.checkMultipleWords(valArray, "american-to-british", 2) || !!this.checkMultipleWords(valArray, "american-to-british", 3)) {
             //TODO refactor
+            // debugger
             let haystack = this.checkMultipleWords(valArray, "american-to-british", 2);
             let needle = `${valArray[i]} ${valArray[i+1]}`;
             let haystack2 = this.checkMultipleWords(valArray, "american-to-british", 3);
             let needle2 = `${valArray[i]} ${valArray[i+1]} ${valArray[i+2]}`;
+            debugger
             if(haystack2.indexOf(needle2) !== -1) {
               if(needle2 in americanOnly) translatedArray.push(this.createHighlightedSpan(americanOnly[needle2]));
               else if(!!this.getKey(britishOnly, needle2)) translatedArray.push(this.createHighlightedSpan(this.getKey(britishOnly, needle2)));
@@ -85,7 +87,8 @@ export class Translator {
               continue;
             }
             if(haystack.indexOf(needle) !== -1) {
-              if(needle in americanOnly) translatedArray.push(this.createHighlightedSpan(americanOnly[needle]));
+              debugger
+              if(needle in americanOnly) {translatedArray.push(this.createHighlightedSpan(americanOnly[needle])); debugger}
               else if(!!this.getKey(britishOnly, needle)) translatedArray.push(this.createHighlightedSpan(this.getKey(britishOnly, needle)));
               i += 2;
               continue;
@@ -167,7 +170,7 @@ export class Translator {
 
   checkMultipleWords = (arr, translateOption, inc) => {
     let multipleWordArray = [];
-    for (let i = 0; i < arr.length; i += inc) {
+    for (let i = 0; i < arr.length; i++) {
       if (!arr[i + 1]) multipleWordArray.push(arr[i]);
       else if (!!arr[i + 1] && !arr[i + 2]) multipleWordArray.push(`${arr[i]} ${arr[i + 1]}`);
       else if (inc === 2) multipleWordArray.push(`${arr[i]} ${arr[i + 1]}`);
