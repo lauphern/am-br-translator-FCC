@@ -27,7 +27,22 @@ export class Translator {
     return p;
   };
 
-  createSpan = str => `<span class="highlight">${str}</span>`;
+  // let obj = {
+  //   originalStr: str,
+  //   cleanStr: str.toLowerCase(),
+  //   capitalized: false,
+  //   dot: false,
+  //   comma: false,
+  //   semicolon: false,
+  //   colon: false,
+  //   exclamation: false,
+  //   question: false
+  // };
+
+  createSpan = obj => {
+    if(obj.capitalized) obj.translation = obj.translation.slice(0,1).toUpperCase() + obj.translation.slice(1)
+    return `<span class="highlight">${obj.translation}</span>`
+  };
 
   clear = () => {
     this.textArea.value = "";
@@ -88,13 +103,17 @@ export class Translator {
       if(timeRegex.test(arr[i].cleanStr)) {
         translatedArray.push(this.createSpan(this.translateTime(arr[i].originalStr, translateOption)));
       } else if(arr[i].cleanStr in dictionaryArr[0]) {
-        translatedArray.push(this.createSpan(dictionaryArr[0][arr[i]]));
+        arr[i].translation = dictionaryArr[0][arr[i].cleanStr];
+        translatedArray.push(this.createSpan(arr[i]));
       } else if(arr[i].cleanStr in dictionaryArr[1]) {
-        translatedArray.push(this.createSpan(dictionaryArr[1][arr[i]]));
+        arr[i].translation = dictionaryArr[1][arr[i].cleanStr];
+        translatedArray.push(this.createSpan(arr[i]));
       } else if(arr[i].cleanStr in dictionaryArr[2]) {
-        translatedArray.push(this.createSpan(dictionaryArr[2][arr[i]]));
+        arr[i].translation = dictionaryArr[2][arr[i].cleanStr];
+        translatedArray.push(this.createSpan(arr[i]));
       } else if(arr[i].cleanStr in dictionaryArr[3]) {
-        translatedArray.push(this.createSpan(dictionaryArr[3][arr[i]]));
+        arr[i].translation = dictionaryArr[3][arr[i].cleanStr];
+        translatedArray.push(this.createSpan(arr[i]));
       }
       // else if(this.checkMultipleWords(arr, translateOption, 2).length > 0 || this.checkMultipleWords(arr, translateOption, 3).length > 0) {
       //     //TODO refactor
@@ -139,7 +158,7 @@ export class Translator {
       exclamation: false,
       question: false
     };
-    if(str.charCodeAt(0) <= 65 && str.charCodeAt(0) >= 90) obj.capitalized = true;
+    if(str.charCodeAt(0) >= 65 && str.charCodeAt(0) <= 90) obj.capitalized = true;
     if(str.charCodeAt(str.length - 1) === 46) obj.dot = true;
     switch(str.charCodeAt(str.length - 1)) {
       case 46:
