@@ -39,9 +39,18 @@ export class Translator {
   //   question: false
   // };
 
-  createSpan = obj => {
-    if(obj.capitalized) obj.translation = obj.translation.slice(0,1).toUpperCase() + obj.translation.slice(1)
-    return `<span class="highlight">${obj.translation}</span>`
+  createSpan = ({obj, time}) => {
+    //We can use this method with either obj or time
+    //Obj is for the usual type of translation
+    if(time) return `<span class="highlight">${time}</span>`;
+    if(obj.capitalized) obj.translation = obj.translation.slice(0,1).toUpperCase() + obj.translation.slice(1);
+    if(obj.dot) return `<span class="highlight">${obj.translation}</span>.`;
+    if(obj.comma) return `<span class="highlight">${obj.translation}</span>,`;
+    if(obj.semicolon) return `<span class="highlight">${obj.translation}</span>;`;
+    if(obj.colon) return `<span class="highlight">${obj.translation}</span>:`;
+    if(obj.exclamation) return `<span class="highlight">${obj.translation}</span>!`;
+    if(obj.question) return `<span class="highlight">${obj.translation}</span>?`;
+    return `<span class="highlight">${obj.translation}</span>`;
   };
 
   clear = () => {
@@ -101,19 +110,19 @@ export class Translator {
     let i = 0;
     while(i < arr.length) {
       if(timeRegex.test(arr[i].cleanStr)) {
-        translatedArray.push(this.createSpan(this.translateTime(arr[i].originalStr, translateOption)));
+        translatedArray.push(this.createSpan({time: this.translateTime(arr[i].originalStr, translateOption)}));
       } else if(arr[i].cleanStr in dictionaryArr[0]) {
         arr[i].translation = dictionaryArr[0][arr[i].cleanStr];
-        translatedArray.push(this.createSpan(arr[i]));
+        translatedArray.push(this.createSpan({obj: arr[i]}));
       } else if(arr[i].cleanStr in dictionaryArr[1]) {
         arr[i].translation = dictionaryArr[1][arr[i].cleanStr];
-        translatedArray.push(this.createSpan(arr[i]));
+        translatedArray.push(this.createSpan({obj: arr[i]}));
       } else if(arr[i].cleanStr in dictionaryArr[2]) {
         arr[i].translation = dictionaryArr[2][arr[i].cleanStr];
-        translatedArray.push(this.createSpan(arr[i]));
+        translatedArray.push(this.createSpan({obj: arr[i]}));
       } else if(arr[i].cleanStr in dictionaryArr[3]) {
         arr[i].translation = dictionaryArr[3][arr[i].cleanStr];
-        translatedArray.push(this.createSpan(arr[i]));
+        translatedArray.push(this.createSpan({obj: arr[i]}));
       }
       // else if(this.checkMultipleWords(arr, translateOption, 2).length > 0 || this.checkMultipleWords(arr, translateOption, 3).length > 0) {
       //     //TODO refactor
@@ -142,7 +151,6 @@ export class Translator {
         }
       i++
     }
-    debugger
     return this.translatedSentenceDiv.append(this.createParagraph(translatedArray.join(" ")));
   }
 
@@ -159,9 +167,10 @@ export class Translator {
       question: false
     };
     if(str.charCodeAt(0) >= 65 && str.charCodeAt(0) <= 90) obj.capitalized = true;
-    if(str.charCodeAt(str.length - 1) === 46) obj.dot = true;
     switch(str.charCodeAt(str.length - 1)) {
       case 46:
+        //With this condition we add support for american titles (i.e. Mr.)
+        if(americanToBritishTitles[obj.cleanStr]) break;
         obj.dot = true;
         break;
       case 44:
