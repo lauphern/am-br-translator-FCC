@@ -27,7 +27,7 @@ export class Translator {
     return p;
   };
 
-  createHighlightedSpan = str => `<span class="highlight">${str}</span>`;
+  createSpan = str => `<span class="highlight">${str}</span>`;
 
   clear = () => {
     this.textArea.value = "";
@@ -40,8 +40,7 @@ export class Translator {
     this.errorMsgDiv.innerText = "";
     this.translatedSentenceDiv.innerText = "";
     //Check there is text to translate
-    if (!val)
-      return this.errorMsgDiv.appendChild(this.createParagraph("Error: No text to translate."));
+    if (!val) return this.errorMsgDiv.appendChild(this.createParagraph("Error: No text to translate."));
     //Call the next function depending on the language to translate
     if (translateOption === "american-to-british") return this.amToBr(val);
     else if (translateOption === "british-to-american") return this.brToAm(val);
@@ -63,7 +62,7 @@ export class Translator {
         el in americanOnly ||
         el in americanToBritishSpelling ||
         el in americanToBritishTitles ||
-        !!this.getKey(britishOnly, el) ||
+        el in britishOnlyReversed ||
         !!this.checkMultipleWords(valArray, "american-to-british", 2) ||
         !!this.checkMultipleWords(valArray, "american-to-british", 3)
     );
@@ -72,11 +71,11 @@ export class Translator {
       let translatedArray = [];
       let i = 0;
       while(i < valArray.length) {
-        if(timeRegex.test(valArray[i])) translatedArray.push(this.createHighlightedSpan(this.translateTime(valArray[i], "american-to-british")));
-        else if(valArray[i] in americanOnly) translatedArray.push(this.createHighlightedSpan(americanOnly[valArray[i]]));
-        else if(valArray[i] in americanToBritishSpelling) translatedArray.push(this.createHighlightedSpan(americanToBritishSpelling[valArray[i]]));
-        else if(valArray[i] in americanToBritishTitles) translatedArray.push(this.createHighlightedSpan(americanToBritishTitles[valArray[i]]));
-        else if(!!this.getKey(britishOnly, valArray[i])) translatedArray.push(this.createHighlightedSpan(this.getKey(britishOnly, valArray[i])));
+        if(timeRegex.test(valArray[i])) translatedArray.push(this.createSpan(this.translateTime(valArray[i], "american-to-british")));
+        else if(valArray[i] in americanOnly) translatedArray.push(this.createSpan(americanOnly[valArray[i]]));
+        else if(valArray[i] in americanToBritishSpelling) translatedArray.push(this.createSpan(americanToBritishSpelling[valArray[i]]));
+        else if(valArray[i] in americanToBritishTitles) translatedArray.push(this.createSpan(americanToBritishTitles[valArray[i]]));
+        else if(el in britishOnlyReversed) translatedArray.push(this.createSpan(britishOnlyReversed[valArray[i]]));
         else if(!!this.checkMultipleWords(valArray, "american-to-british", 2) || !!this.checkMultipleWords(valArray, "american-to-british", 3)) {
             //TODO refactor
             let haystack = this.checkMultipleWords(valArray, "american-to-british", 2);
@@ -84,14 +83,14 @@ export class Translator {
             let haystack2 = this.checkMultipleWords(valArray, "american-to-british", 3);
             let needle2 = `${valArray[i]} ${valArray[i+1]} ${valArray[i+2]}`;
             if(haystack2.indexOf(needle2) !== -1) {
-              if(needle2 in americanOnly) translatedArray.push(this.createHighlightedSpan(americanOnly[needle2]));
-              else if(!!this.getKey(britishOnly, needle2)) translatedArray.push(this.createHighlightedSpan(this.getKey(britishOnly, needle2)));
+              if(needle2 in americanOnly) translatedArray.push(this.createSpan(americanOnly[needle2]));
+              else if(needle2 in britishOnlyReversed) translatedArray.push(this.createSpan(britishOnlyReversed[needle2]));
               i += 3;
               continue;
             }
             if(haystack.indexOf(needle) !== -1) {
-              if(needle in americanOnly) translatedArray.push(this.createHighlightedSpan(americanOnly[needle]))
-              else if(!!this.getKey(britishOnly, needle)) translatedArray.push(this.createHighlightedSpan(this.getKey(britishOnly, needle)));
+              if(needle in americanOnly) translatedArray.push(this.createSpan(americanOnly[needle]))
+              else if(needle in britishOnlyReversed) translatedArray.push(this.createSpan(britishOnlyReversed[needle]));
               i += 2;
               continue;
             }
@@ -110,9 +109,9 @@ export class Translator {
       el =>
         timeRegex.test(el) ||
         el in britishOnly ||
-        !!this.getKey(americanOnly, el) ||
-        !!this.getKey(americanToBritishSpelling, el) ||
-        !!this.getKey(americanToBritishTitles, el) ||
+        el in americanOnlyReversed ||
+        el in americanToBritishSpellingReversed ||
+        el in americanToBritishTitlesReversed ||
         !!this.checkMultipleWords(valArray, "british-to-american", 2) ||
         !!this.checkMultipleWords(valArray, "british-to-american", 3)
     );
@@ -121,11 +120,11 @@ export class Translator {
       let translatedArray = [];
       let i = 0;
       while(i < valArray.length) {
-        if(timeRegex.test(valArray[i])) translatedArray.push(this.createHighlightedSpan(this.translateTime(valArray[i], "british-to-american")));
-        else if(valArray[i] in britishOnly) translatedArray.push(this.createHighlightedSpan(britishOnly[valArray[i]]));
-        else if(!!this.getKey(americanOnly, valArray[i])) translatedArray.push(this.createHighlightedSpan(this.getKey(americanOnly, valArray[i])));
-        else if(!!this.getKey(americanToBritishSpelling, valArray[i])) translatedArray.push(this.createHighlightedSpan(this.getKey(americanToBritishSpelling, valArray[i])));
-        else if(!!this.getKey(americanToBritishTitles, valArray[i])) translatedArray.push(this.createHighlightedSpan(this.getKey(americanToBritishTitles, valArray[i])));
+        if(timeRegex.test(valArray[i])) translatedArray.push(this.createSpan(this.translateTime(valArray[i], "british-to-american")));
+        else if(valArray[i] in britishOnly) translatedArray.push(this.createSpan(britishOnly[valArray[i]]));
+        else if(valArray[i] in americanOnlyReversed) translatedArray.push(this.createSpan(americanOnlyReversed[valArray[i]]));
+        else if(valArray[i] in americanToBritishSpellingReversed) translatedArray.push(this.createSpan(americanToBritishSpellingReversed[valArray[i]]));
+        else if(valArray[i] in americanToBritishTitlesReversed) translatedArray.push(this.createSpan(americanToBritishTitlesReversed[valArray[i]]));
         else if(!!this.checkMultipleWords(valArray, "british-to-american", 2) || !!this.checkMultipleWords(valArray, "british-to-american", 3)) {
             //TODO refactor
             let haystack = this.checkMultipleWords(valArray, "british-to-american", 2);
@@ -133,14 +132,14 @@ export class Translator {
             let haystack2 = this.checkMultipleWords(valArray, "british-to-american", 3);
             let needle2 = `${valArray[i]} ${valArray[i+1]} ${valArray[i+2]}`;
             if(haystack2.indexOf(needle2) !== -1) {
-              if(needle2 in britishOnly) translatedArray.push(this.createHighlightedSpan(britishOnly[needle2]));
-              else if(!!this.getKey(americanOnly, needle2)) translatedArray.push(this.createHighlightedSpan(this.getKey(americanOnly, needle2)));
+              if(needle2 in britishOnly) translatedArray.push(this.createSpan(britishOnly[needle2]));
+              else if(needle2 in americanOnlyReversed) translatedArray.push(this.createSpan(americanOnlyReversed[needle2]));
               i += 3;
               continue;
             }
             if(haystack.indexOf(needle) !== -1) {
-              if(needle in britishOnly) translatedArray.push(this.createHighlightedSpan(britishOnly[needle]));
-              else if(!!this.getKey(americanOnly, needle)) translatedArray.push(this.createHighlightedSpan(this.getKey(americanOnly, needle)));
+              if(needle in britishOnly) translatedArray.push(this.createSpan(britishOnly[needle]));
+              else if(needle in americanOnlyReversed) translatedArray.push(this.createSpan(americanOnlyReversed[needle]));
               i += 2;
               continue;
             }
@@ -151,8 +150,6 @@ export class Translator {
       return this.translatedSentenceDiv.append(this.createParagraph(translatedArray.join(" ")));
     }
   };
-
-  getKey = (obj, val) => Object.keys(obj).find(key => obj[key] === val);
 
   translateTime = (time, translateOption) => {
     if (translateOption === "american-to-british") return time.split(":").join(".");
@@ -168,9 +165,9 @@ export class Translator {
       else if (inc === 3) multipleWordArray.push(`${arr[i]} ${arr[i + 1]} ${arr[i + 2]}`);
     }
     if (translateOption === "american-to-british") {
-      return multipleWordArray.filter(el => el in americanOnly || !!this.getKey(britishOnly, el));
+      return multipleWordArray.filter(el => el in americanOnly || el in britishOnlyReversed);
     } else if (translateOption === "british-to-american") {
-      return multipleWordArray.filter(el => el in britishOnly || !!this.getKey(americanOnly, el));
+      return multipleWordArray.filter(el => el in britishOnly || el in americanOnlyReversed);
     }
   };
 
