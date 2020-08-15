@@ -26,6 +26,7 @@ export class Translator {
   clear = () => {
     this.textArea.value = "";
     this.translatedSentenceDiv.innerText = "";
+    this.translatedSentenceDiv.textContent = "";
     this.errorMsgDiv.innerText = "";
   };
 
