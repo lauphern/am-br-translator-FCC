@@ -183,5 +183,6 @@ export const americanOnly = {
   "yellow light": "amber",
   "zip code": "postcode",
   "zipper": "zip",
-  "zucchini": "courgette"
+  "zucchini": "courgette",
+  "play hooky": "bunk off"
 }
