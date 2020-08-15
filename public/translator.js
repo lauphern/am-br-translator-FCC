@@ -70,13 +70,14 @@ export class Translator {
   shouldTranslateTemp = ({arr, dictionaryArr, translateOption, timeRegex}) => {
     return arr.some(
       el =>
-        timeRegex.test(el) ||
-        el in dictionaryArr[0] ||
-        el in dictionaryArr[1] ||
-        el in dictionaryArr[2] ||
-        el in dictionaryArr[3] ||
-        this.checkMultipleWords(arr, translateOption, 2).length > 0 ||
-        this.checkMultipleWords(arr, translateOption, 3).length > 0
+        timeRegex.test(el.cleanStr) ||
+        el.cleanStr in dictionaryArr[0] ||
+        el.cleanStr in dictionaryArr[1] ||
+        el.cleanStr in dictionaryArr[2] ||
+        el.cleanStr in dictionaryArr[3] 
+        // ||
+        // this.checkMultipleWords(arr, translateOption, 2).length > 0 ||
+        // this.checkMultipleWords(arr, translateOption, 3).length > 0
     );
   }
 
@@ -84,33 +85,45 @@ export class Translator {
     let translatedArray = [];
     let i = 0;
     while(i < arr.length) {
-      if(timeRegex.test(arr[i])) translatedArray.push(this.createSpan(this.translateTime(arr[i], translateOption)));
-      else if(arr[i] in dictionaryArr[0]) translatedArray.push(this.createSpan(dictionaryArr[0][arr[i]]));
-      else if(arr[i] in dictionaryArr[1]) translatedArray.push(this.createSpan(dictionaryArr[1][arr[i]]));
-      else if(arr[i] in dictionaryArr[2]) translatedArray.push(this.createSpan(dictionaryArr[2][arr[i]]));
-      else if(arr[i] in dictionaryArr[3]) translatedArray.push(this.createSpan(dictionaryArr[3][arr[i]]));
-      else if(this.checkMultipleWords(arr, translateOption, 2).length > 0 || this.checkMultipleWords(arr, translateOption, 3).length > 0) {
-          //TODO refactor
-          let haystack = this.checkMultipleWords(arr, translateOption, 2);
-          let needle = `${arr[i]} ${arr[i+1]}`;
-          let haystack2 = this.checkMultipleWords(arr, translateOption, 3);
-          let needle2 = `${arr[i]} ${arr[i+1]} ${arr[i+2]}`;
-          if(haystack2.indexOf(needle2) !== -1) {
-            if(needle2 in dictionaryArr[0]) translatedArray.push(this.createSpan(dictionaryArr[0][needle2]));
-            else if(needle2 in dictionaryArr[3]) translatedArray.push(this.createSpan(dictionaryArr[3][needle2]));
-            i += 3;
-            continue;
-          }
-          if(haystack.indexOf(needle) !== -1) {
-            if(needle in dictionaryArr[0]) translatedArray.push(this.createSpan(dictionaryArr[0][needle]))
-            else if(needle in dictionaryArr[3]) translatedArray.push(this.createSpan(dictionaryArr[3][needle]));
-            i += 2;
-            continue;
-          }
-          translatedArray.push(arr[i]);
-        } else translatedArray.push(arr[i]);
+      if(timeRegex.test(arr[i].cleanStr)) {
+        translatedArray.push(this.createSpan(this.translateTime(arr[i].originalStr, translateOption)));
+      } else if(arr[i].cleanStr in dictionaryArr[0]) {
+        translatedArray.push(this.createSpan(dictionaryArr[0][arr[i]]));
+      } else if(arr[i].cleanStr in dictionaryArr[1]) {
+        translatedArray.push(this.createSpan(dictionaryArr[1][arr[i]]));
+      } else if(arr[i].cleanStr in dictionaryArr[2]) {
+        translatedArray.push(this.createSpan(dictionaryArr[2][arr[i]]));
+      } else if(arr[i].cleanStr in dictionaryArr[3]) {
+        translatedArray.push(this.createSpan(dictionaryArr[3][arr[i]]));
+      }
+      // else if(this.checkMultipleWords(arr, translateOption, 2).length > 0 || this.checkMultipleWords(arr, translateOption, 3).length > 0) {
+      //     //TODO refactor
+      //     let haystack = this.checkMultipleWords(arr, translateOption, 2);
+      //     let needle = `${arr[i]} ${arr[i+1]}`;
+      //     let haystack2 = this.checkMultipleWords(arr, translateOption, 3);
+      //     let needle2 = `${arr[i]} ${arr[i+1]} ${arr[i+2]}`;
+      //     if(haystack2.indexOf(needle2) !== -1) {
+      //       if(needle2 in dictionaryArr[0]) {
+      //         translatedArray.push(this.createSpan(dictionaryArr[0][needle2]));
+      //       } else if(needle2 in dictionaryArr[3]) translatedArray.push(this.createSpan(dictionaryArr[3][needle2]));
+      //       i += 3;
+      //       continue;
+      //     }
+      //     if(haystack.indexOf(needle) !== -1) {
+      //       if(needle in dictionaryArr[0]) {
+      //         translatedArray.push(this.createSpan(dictionaryArr[0][needle]))
+      //       } else if(needle in dictionaryArr[3]) translatedArray.push(this.createSpan(dictionaryArr[3][needle]));
+      //       i += 2;
+      //       continue;
+      //     }
+      //     translatedArray.push(arr[i]);
+      //   }
+      else {
+          translatedArray.push(arr[i].originalStr);
+        }
       i++
     }
+    debugger
     return this.translatedSentenceDiv.append(this.createParagraph(translatedArray.join(" ")));
   }
 
@@ -160,6 +173,7 @@ export class Translator {
   };
 
   checkMultipleWords = (arr, translateOption, inc) => {
+    //TODO refactor so it works with an array of objects
     let multipleWordArray = [];
     for (let i = 0; i < arr.length; i++) {
       if (!arr[i + 1]) multipleWordArray.push(arr[i]);
