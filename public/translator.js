@@ -23,7 +23,6 @@ export class Translator {
   createParagraph = str => {
     let p = document.createElement("p");
     p.innerHTML = str;
-    debugger
     return p;
   };
 
@@ -56,6 +55,7 @@ export class Translator {
     this.translatedSentenceDiv.innerText = "";
     this.translatedSentenceDiv.textContent = "";
     this.errorMsgDiv.innerText = "";
+    this.errorMsgDiv.textContent = "";
   };
 
   translatorCtrl = (val, translateOption) => {
