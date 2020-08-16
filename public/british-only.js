@@ -111,7 +111,7 @@ export const britishOnly = {
   "group captain": "colonel",
   "guard's van": "caboose",
   "guv": "governor",
-  "Heath Robinson device": "Rube Goldberg device",
+  "heath robinson device": "Rube Goldberg device",
   "high street": "main street",
   "hire purchase": "installment plan",
   "hold-all": "duffel bag",
