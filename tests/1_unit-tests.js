@@ -140,6 +140,18 @@ suite('Unit Tests', () => {
         done();
       });
 
+      test('Hey, pass me that spool of thread!  --> Hey, pass me that reel of cotton!', done => {
+        //New test: to test the support or other punctuation marks
+        const input = 'Hey, pass me that spool of thread!';
+        const output = 'Hey, pass me that reel of cotton!';
+        const translator = new Translator.Translator();
+        translator.clear();
+        translator.translatorCtrl(input, "american-to-british");
+        let result = translator.getTranslatedStr();
+        console.log(result)
+        assert.equal(output, result);
+        done();
+      });
     });
 
     suite('British to American English', () => {
