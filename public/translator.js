@@ -67,23 +67,23 @@ export class Translator {
     let timeRegex = /(^\d{1,2}:\d\d$|^\d{1,2}.\d\d$)/;
     //2. Call the next function depending on the language to translate
     if (translateOption === "american-to-british") {
-      //1. Check there are terms to translate
-      let shouldTranslate = this.shouldTranslateTemp({arr: valArray, dictionaryArr: [americanOnly, americanToBritishSpelling, americanToBritishTitles, britishOnlyReversed], translateOption: "american-to-british", timeRegex})
+      //3A. Check there are terms to translate
+      let shouldTranslate = this.shouldTranslate({arr: valArray, dictionaryArr: [americanOnly, americanToBritishSpelling, americanToBritishTitles, britishOnlyReversed], translateOption: "american-to-british", timeRegex})
       if (!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
       else if(shouldTranslate){
-        this.getTranslationTemp({arr: valArray, dictionaryArr: [americanOnly, americanToBritishSpelling, americanToBritishTitles, britishOnlyReversed], translateOption: "american-to-british", timeRegex});
+        this.getTranslation({arr: valArray, dictionaryArr: [americanOnly, americanToBritishSpelling, americanToBritishTitles, britishOnlyReversed], translateOption: "american-to-british", timeRegex});
       }
     } else if (translateOption === "british-to-american") {
-      //1. Check there are terms to translate
-      let shouldTranslate = this.shouldTranslateTemp({arr: valArray, dictionaryArr: [britishOnly, americanToBritishSpellingReversed, americanToBritishTitlesReversed, americanOnlyReversed], translateOption: "british-to-american", timeRegex})
+      //3B. Check there are terms to translate
+      let shouldTranslate = this.shouldTranslate({arr: valArray, dictionaryArr: [britishOnly, americanToBritishSpellingReversed, americanToBritishTitlesReversed, americanOnlyReversed], translateOption: "british-to-american", timeRegex})
       if (!shouldTranslate) return this.translatedSentenceDiv.append(this.createParagraph("Everything looks good to me!"));
       else if(shouldTranslate){
-        this.getTranslationTemp({arr: valArray, dictionaryArr: [britishOnly, americanToBritishSpellingReversed, americanToBritishTitlesReversed, americanOnlyReversed], translateOption: "british-to-american", timeRegex});
+        this.getTranslation({arr: valArray, dictionaryArr: [britishOnly, americanToBritishSpellingReversed, americanToBritishTitlesReversed, americanOnlyReversed], translateOption: "british-to-american", timeRegex});
       }
     };
   };
 
-  shouldTranslateTemp = ({arr, dictionaryArr, translateOption, timeRegex}) => {
+  shouldTranslate = ({arr, dictionaryArr, translateOption, timeRegex}) => {
     return arr.some(
       el =>
         timeRegex.test(el.cleanStr) ||
@@ -96,7 +96,7 @@ export class Translator {
     );
   }
 
-  getTranslationTemp = ({arr, dictionaryArr, translateOption, timeRegex}) => {
+  getTranslation = ({arr, dictionaryArr, translateOption, timeRegex}) => {
     let translatedArray = [];
     let i = 0;
     while(i < arr.length) {
@@ -242,8 +242,6 @@ export class Translator {
   };
 
   checkMultipleWords = (arr, translateOption, inc) => {
-    //TODO 
-    //there is a specific case that has capital letters in the dictionary
     let multipleWordArray = [];
     for (let i = 0; i < arr.length; i++) {
       if (!arr[i + 1]) multipleWordArray.push(arr[i]);
