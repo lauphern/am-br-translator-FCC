@@ -24,8 +24,17 @@ suite('Functional Tests', () => {
       `<span class="highlight">...</span>` tags when the "Translate" button is pressed.
     */
     test("Translation appended to the `translated-sentence` `div`", done => {
-
-      // done();
+      const input = "Can I use the telephone?";
+      const outputText = "Can I use the blower?";
+      const outputHTML = `<p>Can I use the <span class="highlight">blower</span>?</p>`;
+      const translator = new Translator.Translator();
+      translator.clear();
+      translator.translatorCtrl(input, "american-to-british");
+      let textResult = translator.getTranslatedStr();
+      let HTMLResult = document.querySelector("#translated-sentence").innerHTML;
+      assert.equal(outputText, textResult);
+      assert.equal(outputHTML, HTMLResult);
+      done();
     });
 
     /* 
@@ -34,8 +43,17 @@ suite('Functional Tests', () => {
       `translated-sentence` `div` when the "Translate" button is pressed.
     */
     test("'Everything looks good to me!' message appended to the `translated-sentence` `div`", done => {
-
-      // done();
+      const input = "Are you alright over there?";
+      const outputText = "Everything looks good to me!";
+      const outputHTML = `<p>Everything looks good to me!</p>`;
+      const translator = new Translator.Translator();
+      translator.clear();
+      translator.translatorCtrl(input, "american-to-british");
+      let textResult = translator.getTranslatedStr();
+      let HTMLResult = document.querySelector("#translated-sentence").innerHTML;
+      assert.equal(outputText, textResult);
+      assert.equal(outputHTML, HTMLResult);
+      done();
     });
 
     /* 
@@ -44,8 +62,17 @@ suite('Functional Tests', () => {
       the `error-msg` `div`.
     */
     test("'Error: No text to translate.' message appended to the `translated-sentence` `div`", done => {
-
-      // done();
+      const input = "";
+      const outputText = "Error: No text to translate.";
+      const outputHTML = `<p>Error: No text to translate.</p>`;
+      const translator = new Translator.Translator();
+      translator.clear();
+      translator.translatorCtrl(input, "american-to-british");
+      let textResult = document.querySelector("#error-msg").textContent;
+      let HTMLResult = document.querySelector("#error-msg").innerHTML;
+      assert.equal(outputText, textResult);
+      assert.equal(outputHTML, HTMLResult);
+      done();
     });
 
   });
@@ -56,8 +83,14 @@ suite('Functional Tests', () => {
       `divs` are cleared when the "Clear" button is pressed.
     */
     test("Text area, `translated-sentence`, and `error-msg` are cleared", done => {
-
-      // done();
+      const input = "Is everything cleared?";
+      const translator = new Translator.Translator();
+      translator.clear();
+      translator.translatorCtrl(input, "american-to-british");
+      translator.clear();
+      assert.equal(translator.getTranslatedStr(), "");
+      assert.equal(document.querySelector("#error-msg").textContent, "");
+      done();
     });
 
   });
