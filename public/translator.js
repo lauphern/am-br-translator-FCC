@@ -23,22 +23,9 @@ export class Translator {
   createParagraph = str => {
     let p = document.createElement("p");
     p.innerHTML = str;
+    debugger
     return p;
   };
-
-  // let obj = {
-  //   originalStr: str,
-  //   cleanStr: str.toLowerCase(),
-  //   capitalized: false,
-  //   dot: false,
-  //   comma: false,
-  //   semicolon: false,
-  //   colon: false,
-  //   exclamation: false,
-  //   question: false
-  // };
-
-  
 
   createSpan = ({obj, time, arr, returnStr = ""}) => {
     //We can use this method with either obj, time and arr
@@ -51,7 +38,7 @@ export class Translator {
       // if(arr.length === 1) return this.createSpan({obj: arr[0]});
       else if(arr.length > 1) {
         let firstItem = arr.shift();
-        return this.createSpan({arr, returnStr: this.createSpan({obj: firstItem})});
+        return this.createSpan({arr, returnStr: returnStr += this.createSpan({obj: firstItem})});
       }
     }
     if(obj.capitalized) obj.translation = obj.translation.slice(0,1).toUpperCase() + obj.translation.slice(1);
@@ -113,6 +100,77 @@ export class Translator {
     let translatedArray = [];
     let i = 0;
     while(i < arr.length) {
+      //This if statement is not chained with the rest because it evaluates the whole array
+      //and it might return true when arr[i] is not really a match for it
+      //so it can't prevent the other if statements from evaluating
+      //but it has to come before all, because we need to check for compound terms first (i.e. "installment plan")
+      if(this.checkMultipleWords(arr, translateOption, 2).length > 0 || this.checkMultipleWords(arr, translateOption, 3).length > 0){
+        //The following variable is used to skip to the next iteration of the while loop
+        //We use a variable because the decision is being made from the forEach function
+        let doContinue;
+        //OPTION B: 2-word term
+        let haystack = this.checkMultipleWords(arr, translateOption, 2);
+        //TODO refactor
+        let needle = !!arr[i+1] ? `${arr[i].cleanStr} ${arr[i+1].cleanStr}`: `${arr[i].cleanStr} ${undefined}`;
+        //OPTION A: 2-word term
+        let haystack2 = this.checkMultipleWords(arr, translateOption, 3);
+        let needle2 = !!arr[i+2]? `${needle} ${arr[i+2].cleanStr}`: `${needle} ${undefined}`;
+        //EXECUTE OPTION B
+        haystack2.forEach(el => {
+          if(el.indexOf(needle2) !== -1) {
+            if(needle2 in dictionaryArr[0]) {
+              let translationArr = dictionaryArr[0][needle2].split(" ");
+              arr[i].translation = translationArr.shift();
+              arr[i+1].translation = translationArr.length > 0 ? translationArr.shift() : "";
+              arr[i+2].translation = translationArr.length > 0 ? translationArr : "";
+              //As we don't always know the word length of the translation
+              //It's possible we created empty spans
+              //so we're gonna get rid of those before pussing to the array
+              //(Same in the next 3 conditional statements)
+              let translationStr = this.createSpan({arr: [arr[i], arr[i+1], arr[i+2]]});
+              translationStr = translationStr.replace(`<span class="highlight"></span>`, "")
+              translatedArray.push(translationStr);
+            } else if(needle2 in dictionaryArr[3]) {
+              let translationArr = dictionaryArr[3][needle2].split(" ");
+              arr[i].translation = translationArr.shift();
+              arr[i+1].translation = translationArr.length > 0 ? translationArr.shift() : "";
+              arr[i+2].translation = translationArr.length > 0 ? translationArr : "";
+              let translationStr = this.createSpan({arr: [arr[i], arr[i+1], arr[i+2]]});
+              translationStr = translationStr.replace(`<span class="highlight"></span>`, "")
+              translatedArray.push(translationStr);
+            }
+            i += 3;
+            doContinue = true;
+          }
+        })
+        if(doContinue) continue;
+        //EXECUTE OPTION A
+        haystack.forEach(el => {
+          if(el.indexOf(needle) !== -1) {
+            if(needle in dictionaryArr[0]) {
+              let translationArr = dictionaryArr[0][needle].split(" ");
+              arr[i].translation = translationArr.shift();
+              arr[i+1].translation = translationArr.length > 0 ? translationArr : "";
+              let translationStr = this.createSpan({arr: [arr[i], arr[i+1]]});
+              translationStr = translationStr.replace(`<span class="highlight"></span>`, "")
+              translatedArray.push(translationStr);
+            } else if(needle in dictionaryArr[3]) {
+              let translationArr = dictionaryArr[3][needle].split(" ");
+              arr[i].translation = translationArr.shift();
+              arr[i+1].translation = translationArr.length > 0 ? translationArr : "";
+              let translationStr = this.createSpan({arr: [arr[i], arr[i+1]]});
+              translationStr = translationStr.replace(`<span class="highlight"></span>`, "")
+              translatedArray.push(translationStr);
+            }
+            i += 2;
+            doContinue = true;
+          }
+        })
+        if(doContinue) continue;
+        
+        
+        // translatedArray.push(arr[i].originalStr);
+      }
       if(timeRegex.test(arr[i].cleanStr)) {
         translatedArray.push(this.createSpan({time: this.translateTime(arr[i].originalStr, translateOption)}));
       } else if(arr[i].cleanStr in dictionaryArr[0]) {
@@ -127,70 +185,11 @@ export class Translator {
       } else if(arr[i].cleanStr in dictionaryArr[3]) {
         arr[i].translation = dictionaryArr[3][arr[i].cleanStr];
         translatedArray.push(this.createSpan({obj: arr[i]}));
-      } else if(this.checkMultipleWords(arr, translateOption, 2).length > 0 || this.checkMultipleWords(arr, translateOption, 3).length > 0) {
-        //TODO refactor
-        //TODO deberia evaluarse primero lo de las dos y tres palabras (mirar "installment plan")
-        if(!arr[i + 1]) {
-          translatedArray.push(arr[i].originalStr);
-          i++;
-          continue;
-        }
-        //The following variable is used to skip to the next iteration of the while loop
-        //We use a variable because the decision is being made from the forEach function
-        let doContinue;
-        let haystack = this.checkMultipleWords(arr, translateOption, 2);
-        let needle = `${arr[i].cleanStr} ${arr[i+1].cleanStr}`;
-        haystack.forEach(el => {
-          if(el.indexOf(needle) !== -1) {
-            if(needle in dictionaryArr[0]) {
-              //TODO make it work for createSpan
-              //send array to createSpan
-              //The array should have the type of object createSpan is expecting
-              let translationArr = dictionaryArr[0][needle].split(" ");
-              arr[i].translation = translationArr.shift();
-              arr[i+1].translation = translationArr.length > 0 ? translationArr : "";
-              translatedArray.push(this.createSpan({arr: [arr[i], arr[i+1]]}))
-            } else if(needle in dictionaryArr[3]) {
-              let translationArr = dictionaryArr[3][needle].split(" ");
-              arr[i].translation = translationArr.shift();
-              arr[i+1].translation = translationArr.length > 0 ? translationArr : "";
-              translatedArray.push(this.createSpan({arr: [arr[i], arr[i+1]]}));
-            }
-            i += 2;
-            doContinue = true;
-          }
-        })
-        if(doContinue) continue;
-        if(!arr[i + 2]) {
-          translatedArray.push(arr[i].originalStr);
-          i++;
-          continue;
-        }
-        //TODO CHECK THAT IT WORKS FOR THIS OPTION
-        //Y lo tengo que hacer definitivamente antes que la opcion anterior
-        //Y ambas antes que la opcion de una unica palabra
-        //IMPORTANTE TODO
-        let haystack2 = this.checkMultipleWords(arr, translateOption, 3);
-        let needle2 = `${arr[i].cleanStr} ${arr[i+1].cleanStr} ${arr[i+2].cleanStr}`;
-        haystack2.forEach(el => {
-          if(el.indexOf(needle2) !== -1) {
-            if(needle2 in dictionaryArr[0]) {
-              translatedArray.push(this.createSpan(dictionaryArr[0][needle2]));
-            } else if(needle2 in dictionaryArr[3]) {
-              translatedArray.push(this.createSpan(dictionaryArr[3][needle2]));
-            }
-            i += 3;
-            doContinue = true;
-          }
-        })
-        if(doContinue) continue;
-        translatedArray.push(arr[i].originalStr);
       } else {
         translatedArray.push(arr[i].originalStr);
       }
       i++
     }
-    debugger
     //We're using replace to trim possible double spaces
     //And we also trim blankspaces at the end
     return this.translatedSentenceDiv.append(this.createParagraph(translatedArray.join(" ").replace(/\s+/g, " ").trim()));
@@ -243,7 +242,7 @@ export class Translator {
   };
 
   checkMultipleWords = (arr, translateOption, inc) => {
-    //TODO refactor so it works with an array of objects
+    //TODO 
     //there is a specific case that has capital letters in the dictionary
     let multipleWordArray = [];
     for (let i = 0; i < arr.length; i++) {
