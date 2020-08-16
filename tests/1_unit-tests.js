@@ -86,7 +86,6 @@ suite('Unit Tests', () => {
       });
 
       test('Like a high tech Rube Goldberg machine. --> Like a high tech Heath Robinson device.', done => {
-        //TODO dot at the end and uppercase
         const input = 'Like a high tech Rube Goldberg machine.';
         const output = 'Like a high tech Heath Robinson device.';
         const translator = new Translator.Translator();
